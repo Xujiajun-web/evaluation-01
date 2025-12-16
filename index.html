@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择真实的CEUS图像</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px; /* 标题上方的空间 */
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center; /* 居中显示 */
+            align-items: center; /* 垂直居中 */
+            margin: 100px 0; /* 上下图像之间的空间，防止覆盖 */
+        }
+
+        .image-container .image {
+            text-align: center; /* 使图像和文字水平居中对齐 */
+            margin: 0 100px; /* 调整两张图像之间的间距 */
+        }
+
+        .image-container img {
+            max-width: 400%;
+            max-height: 400px;
+            transform: scale(1.5); /* 默认放大10% */
+            transition: transform 0.3s ease;
+        }
+
+        .image-label {
+            font-weight: bold;
+            margin-top: 80px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .input-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .progress {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 用户输入姓名的部分 -->
+    <div class="input-container">
+        <label for="username">请输入您的姓名: </label>
+        <input type="text" id="username" placeholder="姓名" required>
+    </div>
+
+    <h1>选择真实的CEUS图像</h1>
+
+    <!-- 显示当前组数 -->
+    <div class="progress">
+        <p>当前组：<span id="group-number">1</span>/100</p>
+    </div>
+
+    <div id="image-gallery">
+        <!-- 图像对将会在这里动态生成 -->
+    </div>
+
+    <!-- 选择按钮 -->
+    <div class="button-container">
+        <button class="rating-button" onclick="submitRating(1)">左边真实</button>
+        <button class="rating-button" onclick="submitRating(2)">右边真实</button>
+    </div>
+
+    <script>
+        const imagesFolder = './images'; // 图像文件夹路径
+        let imagePairs = {}; // 存放从JSON文件读取的图像对
+        let currentGroupIndex = 0;
+        const userChoices = [];
+        let username = ''; // 用户姓名
+
+        // 动态加载图像对数据
+        function loadImagePairs() {
+            fetch('imagePairs.json')  // 从本地获取JSON文件
+                .then(response => response.json())
+                .then(data => {
+                    imagePairs = data;
+                    displayImages(Object.keys(imagePairs)[currentGroupIndex]);
+                })
+                .catch(error => {
+                    console.error('Error loading image pairs:', error);
+                });
+        }
+
+        // 创建图像展示
+        function displayImages(group) {
+            const imageContainer = document.getElementById('image-gallery');
+            const leftImage = imagePairs[group].left;
+            const rightImage = imagePairs[group].right;
+
+            // 更新组号
+            document.getElementById('group-number').innerText = currentGroupIndex + 1;
+
+            imageContainer.innerHTML = `
+                <div class="image-container">
+                    <div class="image" id="left-image">
+                        <img src="${leftImage}" alt="左图">
+                        <div class="image-label"></div>
+                    </div>
+                    <div class="image" id="right-image">
+                        <img src="${rightImage}" alt="右图">
+                        <div class="image-label"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 提交评分并跳转到下一组
+        function submitRating(rating) {
+            const currentGroup = Object.keys(imagePairs)[currentGroupIndex];
+            const leftImage = imagePairs[currentGroup].left;
+
+            // 获取用户输入的姓名
+            if (!username) {
+                username = document.getElementById('username').value;
+                if (!username) {
+                    alert('请输入姓名！');
+                    return;
+                }
+            }
+
+            // 记录评分，加入用户姓名和标题
+            userChoices.push({
+                username: username,
+                title: document.title,
+                image: leftImage,
+                rating: rating
+            });
+
+            // 自动跳转到下一组
+            currentGroupIndex++;
+            if (currentGroupIndex < Object.keys(imagePairs).length) {
+                displayImages(Object.keys(imagePairs)[currentGroupIndex]);
+            } else {
+                alert("任务完成！");
+                saveToCSV();
+            }
+        }
+
+        // 保存数据到CSV文件
+        function saveToCSV() {
+            let csvContent = "姓名,标题,图像,评分\n";
+            userChoices.forEach(choice => {
+                csvContent += `${choice.username},${choice.title},${choice.image},${choice.rating}\n`;
+            });
+
+            // 使用姓名和标题作为CSV文件名
+            const fileName = `${username}-${document.title}.csv`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+
+        // 初始化页面
+        window.onload = loadImagePairs;
+    </script>
+</body>
+</html>
