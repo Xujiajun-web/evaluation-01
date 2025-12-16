@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>选择真实的CEUS图像</title>
+    <title>消融后血供及病灶勾画清晰度评估</title>
     <style>
         body {
             margin: 0;
@@ -54,7 +54,6 @@
             margin-top: 20px;
             font-size: 18px;
         }
-
     </style>
 </head>
 <body>
@@ -64,7 +63,7 @@
         <input type="text" id="username" placeholder="姓名" required>
     </div>
 
-    <h1>选择真实的CEUS图像</h1>
+    <h1>消融后血供及病灶勾画清晰度评估</h1>
 
     <!-- 显示当前组数 -->
     <div class="progress">
@@ -75,10 +74,11 @@
         <!-- 图像对将会在这里动态生成 -->
     </div>
 
-    <!-- 选择按钮 -->
+    <!-- 评分按钮 -->
     <div class="button-container">
-        <button class="rating-button" onclick="submitRating(1)">左边真实</button>
-        <button class="rating-button" onclick="submitRating(2)">右边真实</button>
+        <button class="rating-button" onclick="submitRating(1)">1 - 不可接受</button>
+        <button class="rating-button" onclick="submitRating(2)">2 - 较差</button>
+        <button class="rating-button" onclick="submitRating(3)">3 - 可接受</button>
     </div>
 
     <script>
@@ -114,11 +114,11 @@
                 <div class="image-container">
                     <div class="image" id="left-image">
                         <img src="${leftImage}" alt="左图">
-                        <div class="image-label"></div>
+                        <div class="image-label">真实CEUS</div>
                     </div>
                     <div class="image" id="right-image">
                         <img src="${rightImage}" alt="右图">
-                        <div class="image-label"></div>
+                        <div class="image-label">生成CEUS</div>
                     </div>
                 </div>
             `;
